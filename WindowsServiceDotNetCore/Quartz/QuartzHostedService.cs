@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -31,10 +32,10 @@ namespace WindowsServiceDotNetCore.Quartz
 
             foreach (var jobSchedule in _jobSchedules)
             {
-                var job = CreateJob(jobSchedule);
-                var trigger = CreateTrigger(jobSchedule);
+                var job = CreateJob(jobSchedule.JobType);
+                var triggers = CreateTriggers(jobSchedule);
 
-                await Scheduler.ScheduleJob(job, trigger, cancellationToken);
+                await Scheduler.ScheduleJob(job, triggers, false, cancellationToken);
             }
 
             await Scheduler.Start(cancellationToken);
@@ -45,9 +46,8 @@ namespace WindowsServiceDotNetCore.Quartz
             if (Scheduler != null) await Scheduler.Shutdown(cancellationToken);
         }
 
-        private static IJobDetail CreateJob(JobSchedule schedule)
+        private static IJobDetail CreateJob(Type jobType)
         {
-            var jobType = schedule.JobType;
             return JobBuilder
                 .Create(jobType)
                 .WithIdentity(jobType.FullName)
@@ -55,14 +55,25 @@ namespace WindowsServiceDotNetCore.Quartz
                 .Build();
         }
 
-        private static ITrigger CreateTrigger(JobSchedule schedule)
+        private static IReadOnlyCollection<ITrigger> CreateTriggers(JobSchedule jobSchedule)
         {
-            return TriggerBuilder
-                .Create()
-                .WithIdentity($"{schedule.JobType.FullName}.trigger")
-                .WithCronSchedule(schedule.CronExpression)
-                .WithDescription(schedule.CronExpression)
-                .Build();
+            var schedules = jobSchedule.Schedules;
+            var triggers = new List<ITrigger>(schedules.Count);
+
+            var i = 0;
+            foreach (var schedule in schedules)
+            {
+                i++;
+
+                triggers.Add(TriggerBuilder
+                    .Create()
+                    .WithIdentity($"{jobSchedule.JobType.FullName}-{i}.trigger")
+                    .WithCronSchedule(schedule)
+                    .WithDescription(schedule)
+                    .Build());
+            }
+
+            return triggers;
         }
     }
 }

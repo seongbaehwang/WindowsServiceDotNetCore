@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -81,10 +82,12 @@ namespace WindowsServiceDotNetCore
                     //services.AddSingleton<HelloWorldJob>();
                     // ** AddTransient is used to check SingletonJobFactory.ReturnJob
                     services.AddTransient<HelloWorldJob>();
+                    services.AddSingleton<HelloWorldJob2>();
 
-                    services.AddSingleton(new JobSchedule(
-                        jobType: typeof(HelloWorldJob),
-                        cronExpression: "0/5 * * * * ?")); // run every 5 seconds
+                    var schedules = hostContext.Configuration.GetSection("JobSchedules").Get<Dictionary<string, string[]>>();
+
+                    services.AddSingleton(new JobSchedule(typeof(HelloWorldJob), schedules[nameof(HelloWorldJob)]));
+                    services.AddSingleton(new JobSchedule(typeof(HelloWorldJob2), schedules[nameof(HelloWorldJob2)]));
 
                     services.AddHostedService<QuartzHostedService>();
                 });

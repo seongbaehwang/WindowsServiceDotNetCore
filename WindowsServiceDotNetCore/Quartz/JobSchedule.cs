@@ -1,17 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsServiceDotNetCore.Quartz
 {
     public class JobSchedule
     {
-        public JobSchedule(Type jobType, string cronExpression)
+        /// <summary>
+        /// Create an instance of <see cref="JobSchedule"/>
+        /// </summary>
+        /// <param name="jobType">Type of job to schedule</param>
+        /// <param name="schedules">List of CRON expression schedules</param>
+        public JobSchedule(Type jobType, IReadOnlyCollection<string> schedules)
         {
             JobType = jobType;
-            CronExpression = cronExpression;
+            Schedules = schedules;
         }
 
         public Type JobType { get; }
 
-        public string CronExpression { get; }
+        /// <summary>
+        /// List of CRON expression schedules
+        /// </summary>
+        public IReadOnlyCollection<string> Schedules { get; }
     }
 }
