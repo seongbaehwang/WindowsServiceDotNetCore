@@ -1,0 +1,5 @@
+{
+  "environment": "Development",
+  // applicationName is not applied. why???
+  "applicationName": "Demo DotNet Core Windows service"
+}
