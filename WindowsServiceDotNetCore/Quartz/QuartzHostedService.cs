@@ -68,6 +68,7 @@ namespace WindowsServiceDotNetCore.Quartz
                 triggers.Add(TriggerBuilder
                     .Create()
                     .WithIdentity($"{jobSchedule.JobType.FullName}-{i}.trigger")
+                    //.WithCronSchedule(schedule, csb => csb.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("New Zealand Standard Time")))
                     .WithCronSchedule(schedule)
                     .WithDescription(schedule)
                     .Build());
